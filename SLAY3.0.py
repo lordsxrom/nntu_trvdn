@@ -614,17 +614,17 @@ df2.to_excel('optimisation_step.xls', sheet_name='sheet_TRVDN')
 
 number_TRVDN = len(I1_act_doTRVDN)
 index = list(range(0, number_TRVDN))
-cols = ['Zn_act', 'Zn_react', 'Ec_act', 'Ec_react', 'Ec_mod', 'Ec_yg', 'I1_act', 'I1_react', 'I2_act', 'I2_react', 'Pn',
-        'Qn',
-        'Un_act_TRVDN', 'Un_react_TRVDN', 'V_act', 'V_react', 'KPD']
+cols = ['Zn_act', 'Zn_react', 'Ec_mod', 'Ec_yg',
+        'Ec_act', 'Ec_react', 'I1_act', 'I1_react', 'I2_act', 'I2_react',
+        'Pn', 'Qn', 'Un_act_TRVDN', 'Un_react_TRVDN', 'V_act', 'V_react', 'KPD']
 
 df3 = pd.DataFrame(columns=cols, index=index)
 df3['Zn_act'] = Zn_act_doTRVDN
 df3['Zn_react'] = Zn_react_doTRVDN
-df3['Ec_act'] = Ec_act_doTRVDN
-df3['Ec_react'] = Ec_react_doTRVDN
 df3['Ec_mod'] = Ec_mod_doTRVDN
 df3['Ec_yg'] = Ec_yg_doTRVDN
+df3['Ec_act'] = Ec_act_doTRVDN
+df3['Ec_react'] = Ec_react_doTRVDN
 df3['I1_act'] = I1_act_doTRVDN
 df3['I1_react'] = I1_react_doTRVDN
 df3['I2_act'] = I2_act_doTRVDN
