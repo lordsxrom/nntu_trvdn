@@ -293,8 +293,8 @@ for i in range(0, len(Ec_Green_list)):
             I_GV_list[t + ii][1]) * abs(I_GV_list[t + ii][1]) * Zohl.real + abs(I_GV_list[t + ii][0]) * abs(
             I_GV_list[t + ii][0]) * Zcl.real)
         Unag = abs((I_GV_list[t + ii][2]) * (Zn_GV_list[i]))
-        if abs(I_GV_list[t + ii][0]) <= 0.8 * Iddkl and abs(
-                I_GV_list[t + ii][1]) <= 0.8 * Iddvl and KPD > KPDopt and Un * 0.95 <= Unag <= Un * 1.05:
+        if abs(I_GV_list[t + ii][0]) <= 0.95 * Iddkl and abs(
+                I_GV_list[t + ii][1]) <= 0.95 * Iddvl and KPD > KPDopt:
             KPDopt = KPD
             Vopt = V_list[ii]
             I1 = I_GV_list[t + ii][0]
@@ -355,8 +355,8 @@ for i in range(0, len(Ec_Yellow_list)):
             I_YV_list[t + ii][1]) * abs(I_YV_list[t + ii][1]) * Zohl.real + abs(I_YV_list[t + ii][0]) * abs(
             I_YV_list[t + ii][0]) * Zcl.real)
         Unag = abs((I_YV_list[t + ii][2]) * (Zn_YV_list[i]))
-        if abs(I_YV_list[t + ii][0]) <= 0.8 * Iddkl and abs(
-                I_YV_list[t + ii][1]) <= 0.8 * Iddvl and KPD > KPDopt and Un * 0.95 <= Unag <= Un * 1.05:
+        if abs(I_YV_list[t + ii][0]) <= 0.95 * Iddkl and abs(
+                I_YV_list[t + ii][1]) <= 0.95 * Iddvl and KPD > KPDopt:
             KPDopt = KPD
             Vopt = V_list[ii]
             I1 = I_YV_list[t + ii][0]
@@ -364,8 +364,8 @@ for i in range(0, len(Ec_Yellow_list)):
             I3 = I_YV_list[t + ii][2]
             Zn = Zn_YV_list[t + ii]
             Ec = Ec_YV_list[t + ii]
-        elif abs(I_YV_list[t + ii][0]) <= 0.9 * Iddkl and abs(
-                I_YV_list[t + ii][1]) <= 0.9 * Iddvl and abs(I_YV_list[t + ii][0]) < Iddkmax:
+        elif abs(I_YV_list[t + ii][0]) <= Iddkl and abs(
+                I_YV_list[t + ii][1]) <= Iddvl and abs(I_YV_list[t + ii][0]) < Iddkmax:
             KPDopt = KPD
             Iddkmax = abs(I_YV_list[t + ii][0])
             Vopt = V_list[ii]
@@ -428,8 +428,8 @@ for i in range(0, len(Ec_Red_list)):
             I_RV_list[t + ii][1]) * abs(I_RV_list[t + ii][1]) * Zohl.real + abs(I_RV_list[t + ii][0]) * abs(
             I_RV_list[t + ii][0]) * Zcl.real)
         Unag = abs((I_RV_list[t + ii][2]) * (Zn_RV_list[i]))
-        if abs(I_RV_list[t + ii][0]) <= 0.8 * Iddkl and abs(
-                I_RV_list[t + ii][1]) <= 0.8 * Iddvl and KPD > KPDopt and Un * 0.95 <= Unag <= Un * 1.05:
+        if abs(I_RV_list[t + ii][0]) <= 0.95 * Iddkl and abs(
+                I_RV_list[t + ii][1]) <= 0.95 * Iddvl and KPD > KPDopt:
             KPDopt = KPD
             Vopt = V_list[ii]
             I1 = I_RV_list[t + ii][0]
@@ -437,18 +437,8 @@ for i in range(0, len(Ec_Red_list)):
             I3 = I_RV_list[t + ii][2]
             Zn = Zn_RV_list[t + ii]
             Ec = Ec_RV_list[t + ii]
-        elif abs(I_RV_list[t + ii][0]) <= 0.9 * Iddkl and abs(
-                I_RV_list[t + ii][1]) <= 0.9 * Iddvl and abs(I_RV_list[t + ii][0]) < Iddkmax and Un * 0.9 <= Unag <= Un * 1.1:
-            Iddkmax = abs(I_RV_list[t + ii][0])
-            KPDopt = KPD
-            Vopt = V_list[ii]
-            I1 = I_RV_list[t + ii][0]
-            I2 = I_RV_list[t + ii][1]
-            I3 = I_RV_list[t + ii][2]
-            Zn = Zn_RV_list[t + ii]
-            Ec = Ec_RV_list[t + ii]
-        elif abs(I_RV_list[t + ii][0]) <= 0.95 * Iddkl and abs(
-                I_RV_list[t + ii][1]) <= 0.95 * Iddvl and KPD > KPDopt and abs(I_RV_list[t + ii][0]) < Iddkmax:
+        elif abs(I_RV_list[t + ii][0]) <= Iddkl and abs(
+                I_RV_list[t + ii][1]) <= Iddvl and abs(I_RV_list[t + ii][0]) < Iddkmax:
             Iddkmax = abs(I_RV_list[t + ii][0])
             KPDopt = KPD
             Vopt = V_list[ii]
