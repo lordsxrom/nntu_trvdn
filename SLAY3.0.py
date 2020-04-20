@@ -1,15 +1,15 @@
 # coding=utf-8
-import numpy as np
 import cmath
 import math
-import xlwt
+
+import numpy as np
 import pandas as pd
 
 # Линейное напряжение, В
 
 
-Zcl = 1.032 + 0.324j
-Zohl = 0.99 + 1.815j
+Zcl = 1.29 + 0.405j
+Zohl = 0.792 + 1.452j
 Ztrvdn = 0.01 + 0.05j
 Zg = 0.00001 + 0.00001j
 
@@ -23,12 +23,12 @@ Unom_trvdn = 6300
 # Сопротивление нагрузки
 Z_list = []
 
-for Zn in range(8, 12):
-    for Znj in range(5, 8):
+for Zn in range(5, 9):
+    for Znj in range(2, 5):
         Z1 = complex(Zn, Znj)
         Z_list.extend([Z1])
 
-# Напряжение на источнике 
+# Напряжение на источнике
 Ec_list = []
 
 for Ecmod in range(5040, 7561, 100):
@@ -159,7 +159,7 @@ KPD_Green_list = []
 
 
 for i in range(0, len(Un_list)):
-    # Фильтрация зеленой зоны    
+    # Фильтрация зеленой зоны
     if Un * 0.95 <= Un_mod[i] <= Un * 1.05 and I1_list_mod[i] <= 0.8 * Iddkl and I2_list_mod[i] <= 0.8 * Iddvl:
         Ec_Green_list.append(Ec_result_list[i])
         Zn_Green_list.append(Zn_result_list[i])
@@ -240,11 +240,11 @@ V_list_result = []
 Vprod = []
 Vpop = []
 
-for i in range(0, 1000, 100):
+for i in range(0, 1000, 10):
     V = i * Unom_trvdn / 10000
     Vprod.append(V)
 
-for i in range(0, 855, 100):
+for i in range(0, 855, 10):
     V = i * Unom_trvdn / 10000
     Vpop.append(V)
 
@@ -289,9 +289,9 @@ for i in range(0, len(Ec_Green_list)):
         V_GV_list.extend([V_list[ii]])
         I_GV_list.extend([result_V.tolist()])
         KPD = (abs(I_GV_list[t + ii][2]) * abs(I_GV_list[t + ii][2]) * Zn_GV_list[i].real) / (
-                    abs(I_GV_list[t + ii][2]) * abs(I_GV_list[t + ii][2]) * (Zn_GV_list[i].real + Zg.real) + abs(
-                I_GV_list[t + ii][1]) * abs(I_GV_list[t + ii][1]) * Zohl.real + abs(I_GV_list[t + ii][0]) * abs(
-                I_GV_list[t + ii][0]) * Zcl.real)
+                abs(I_GV_list[t + ii][2]) * abs(I_GV_list[t + ii][2]) * (Zn_GV_list[i].real + Zg.real) + abs(
+            I_GV_list[t + ii][1]) * abs(I_GV_list[t + ii][1]) * Zohl.real + abs(I_GV_list[t + ii][0]) * abs(
+            I_GV_list[t + ii][0]) * Zcl.real)
         Unag = abs((I_GV_list[t + ii][2]) * (Zn_GV_list[i]))
         if abs(I_GV_list[t + ii][0]) <= 0.8 * Iddkl and abs(
                 I_GV_list[t + ii][1]) <= 0.8 * Iddvl and KPD > KPDopt and Un * 0.95 <= Unag <= Un * 1.05:
@@ -356,6 +356,15 @@ for i in range(0, len(Ec_Yellow_list)):
         Unag = abs((I_YV_list[t + ii][2]) * (Zn_YV_list[i]))
         if abs(I_YV_list[t + ii][0]) <= 0.8 * Iddkl and abs(
                 I_YV_list[t + ii][1]) <= 0.8 * Iddvl and KPD > KPDopt and Un * 0.95 <= Unag <= Un * 1.05:
+            KPDopt = KPD
+            Vopt = V_list[ii]
+            I1 = I_YV_list[t + ii][0]
+            I2 = I_YV_list[t + ii][1]
+            I3 = I_YV_list[t + ii][2]
+            Zn = Zn_YV_list[t + ii]
+            Ec = Ec_YV_list[t + ii]
+        elif abs(I_YV_list[t + ii][0]) <= 0.9 * Iddkl and abs(
+                I_YV_list[t + ii][1]) <= 0.9 * Iddvl and KPD > KPDopt:
             KPDopt = KPD
             Vopt = V_list[ii]
             I1 = I_YV_list[t + ii][0]
@@ -434,6 +443,15 @@ for i in range(0, len(Ec_Red_list)):
             I3 = I_RV_list[t + ii][2]
             Zn = Zn_RV_list[t + ii]
             Ec = Ec_RV_list[t + ii]
+        elif abs(I_RV_list[t + ii][0]) <= 0.95 * Iddkl and abs(
+                I_RV_list[t + ii][1]) <= 0.95 * Iddvl and KPD > KPDopt:
+            KPDopt = KPD
+            Vopt = V_list[ii]
+            I1 = I_RV_list[t + ii][0]
+            I2 = I_RV_list[t + ii][1]
+            I3 = I_RV_list[t + ii][2]
+            Zn = Zn_RV_list[t + ii]
+            Ec = Ec_RV_list[t + ii]
     Zn_RDS.extend([Zn])
     Ec_RDS.extend([Ec])
     I1_RV_list.extend([I1])
@@ -458,7 +476,7 @@ V_TRVDN_list = []
 
 for i in range(0, nuber_green):
     Ec_TRVDN_list.append(Ec_GDS[i])
-    Zn_TRVDN_list.append(Zn_GV_list[i])
+    Zn_TRVDN_list.append(Zn_GDS[i])
     I1_TRVDN_list.append(I1_GV_list[i])
     I2_TRVDN_list.append(I2_GV_list[i])
     I3_TRVDN_list.append(I3_GV_list[i])
@@ -468,7 +486,7 @@ for i in range(0, nuber_green):
 
 for i in range(0, nuber_yellow):
     Ec_TRVDN_list.append(Ec_YDS[i])
-    Zn_TRVDN_list.append(Zn_YV_list[i])
+    Zn_TRVDN_list.append(Zn_YDS[i])
     I1_TRVDN_list.append(I1_YV_list[i])
     I2_TRVDN_list.append(I2_YV_list[i])
     I3_TRVDN_list.append(I3_YV_list[i])
@@ -478,7 +496,7 @@ for i in range(0, nuber_yellow):
 
 for i in range(0, nuber_red):
     Ec_TRVDN_list.append(Ec_RDS[i])
-    Zn_TRVDN_list.append(Zn_RV_list[i])
+    Zn_TRVDN_list.append(Zn_RDS[i])
     I1_TRVDN_list.append(I1_RV_list[i])
     I2_TRVDN_list.append(I2_RV_list[i])
     I3_TRVDN_list.append(I3_RV_list[i])
@@ -501,6 +519,8 @@ Un_react_TRVDN = []
 V_act_TRVDN = []
 V_react_TRVDN = []
 KPD_TRVDN = []
+Ec_mod_TRVDN = []
+Ec_yg_TRVDN = []
 
 for i in range(0, len(V_TRVDN_list)):
     V_act_TRVDN.append(V_TRVDN_list[i].real)
@@ -518,6 +538,8 @@ for i in range(0, len(V_TRVDN_list)):
     I2_react_TRVDN.append(I2_TRVDN_list[i].imag)
     Pn_TRVDN.append(abs(I3_TRVDN_list[i]) * abs(I3_TRVDN_list[i]) * Zn_act_TRVDN[i])
     Qn_TRVDN.append(abs(I3_TRVDN_list[i]) * abs(I3_TRVDN_list[i]) * Zn_react_TRVDN[i])
+    Ec_yg_TRVDN.append((math.atan(Ec_TRVDN_list[i].imag / Ec_TRVDN_list[i].real) * 180 / math.pi))
+    Ec_mod_TRVDN.append(abs(Ec_TRVDN_list[i]))
 
 V_act_doTRVDN = []
 V_react_doTRVDN = []
@@ -534,6 +556,8 @@ I2_act_doTRVDN = []
 I2_react_doTRVDN = []
 Pn_doTRVDN = []
 Qn_doTRVDN = []
+Ec_mod_doTRVDN = []
+Ec_yg_doTRVDN = []
 
 for i in range(0, len(V_TRVDN_list)):
     V_act_doTRVDN.append(V_TRVDN_list[i].real)
@@ -551,10 +575,20 @@ for i in range(0, len(V_TRVDN_list)):
     I2_react_doTRVDN.append(I2_DOTRVDN_list[i].imag)
     Pn_doTRVDN.append(abs(I3_DOTRVDN_list[i]) * abs(I3_DOTRVDN_list[i]) * Zn_act_doTRVDN[i])
     Qn_doTRVDN.append(abs(I3_DOTRVDN_list[i]) * abs(I3_DOTRVDN_list[i]) * Zn_react_doTRVDN[i])
+    Ec_mod_doTRVDN.append(abs(Ec_DOTRVDN_list[i]))
+    Ec_yg_doTRVDN.append((math.atan(Ec_DOTRVDN_list[i].imag / Ec_DOTRVDN_list[i].real) * 180 / math.pi))
+
+Un__doTRVDN = Zn_DOTRVDN_list[0] * I3_DOTRVDN_list[0]
+Sn__doTRVDN = I3_DOTRVDN_list[0] * Un__doTRVDN
+
+print(I3_DOTRVDN_list[0])
+print(Un__doTRVDN)
+print(Sn__doTRVDN)
 
 number_TRVDN = len(I1_act_TRVDN)
 index = list(range(0, number_TRVDN))
-cols = ['Zn_act', 'Zn_react', 'Ec_act', 'Ec_react', 'I1_act', 'I1_react', 'I2_act', 'I2_react', 'Pn', 'Qn',
+cols = ['Zn_act', 'Zn_react', 'Ec_act', 'Ec_react', 'Ec_mod', 'Ec_yg', 'I1_act', 'I1_react', 'I2_act', 'I2_react', 'Pn',
+        'Qn',
         'Un_act_TRVDN', 'Un_react_TRVDN', 'V_act', 'V_react', 'KPD']
 
 df2 = pd.DataFrame(columns=cols, index=index)
@@ -562,6 +596,8 @@ df2['Zn_act'] = Zn_act_TRVDN
 df2['Zn_react'] = Zn_react_TRVDN
 df2['Ec_act'] = Ec_act_TRVDN
 df2['Ec_react'] = Ec_react_TRVDN
+df2['Ec_mod'] = Ec_mod_TRVDN
+df2['Ec_yg'] = Ec_yg_TRVDN
 df2['I1_act'] = I1_act_TRVDN
 df2['I1_react'] = I1_react_TRVDN
 df2['I2_act'] = I2_act_TRVDN
@@ -578,7 +614,8 @@ df2.to_excel('optimisation_step.xls', sheet_name='sheet_TRVDN')
 
 number_TRVDN = len(I1_act_doTRVDN)
 index = list(range(0, number_TRVDN))
-cols = ['Zn_act', 'Zn_react', 'Ec_act', 'Ec_react', 'I1_act', 'I1_react', 'I2_act', 'I2_react', 'Pn', 'Qn',
+cols = ['Zn_act', 'Zn_react', 'Ec_act', 'Ec_react', 'Ec_mod', 'Ec_yg', 'I1_act', 'I1_react', 'I2_act', 'I2_react', 'Pn',
+        'Qn',
         'Un_act_TRVDN', 'Un_react_TRVDN', 'V_act', 'V_react', 'KPD']
 
 df3 = pd.DataFrame(columns=cols, index=index)
@@ -586,6 +623,8 @@ df3['Zn_act'] = Zn_act_doTRVDN
 df3['Zn_react'] = Zn_react_doTRVDN
 df3['Ec_act'] = Ec_act_doTRVDN
 df3['Ec_react'] = Ec_react_doTRVDN
+df3['Ec_mod'] = Ec_mod_doTRVDN
+df3['Ec_yg'] = Ec_yg_doTRVDN
 df3['I1_act'] = I1_act_doTRVDN
 df3['I1_react'] = I1_react_doTRVDN
 df3['I2_act'] = I2_act_doTRVDN
