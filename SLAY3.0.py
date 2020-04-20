@@ -341,6 +341,7 @@ for i in range(0, len(Ec_Yellow_list)):
     Vopt = -1
     KPDopt = -1
     Unag = -1
+    Iddkmax = Iddkl
     for ii in range(0, len(V_list)):
         Z_3 = np.array([[1, 1, -1], [Zcl, -(Zohl + Ztrvdn), 0], [Zcl, 0, Zn_Yellow_list[i] + Zg]])
         E_3 = np.array([0, -V_list[ii], Ec_Yellow_list[i]])
@@ -364,8 +365,9 @@ for i in range(0, len(Ec_Yellow_list)):
             Zn = Zn_YV_list[t + ii]
             Ec = Ec_YV_list[t + ii]
         elif abs(I_YV_list[t + ii][0]) <= 0.9 * Iddkl and abs(
-                I_YV_list[t + ii][1]) <= 0.9 * Iddvl and KPD > KPDopt:
+                I_YV_list[t + ii][1]) <= 0.9 * Iddvl and abs(I_YV_list[t + ii][0]) < Iddkmax:
             KPDopt = KPD
+            Iddkmax = abs(I_YV_list[t + ii][0])
             Vopt = V_list[ii]
             I1 = I_YV_list[t + ii][0]
             I2 = I_YV_list[t + ii][1]
@@ -412,6 +414,7 @@ for i in range(0, len(Ec_Red_list)):
     Vopt = -1
     KPDopt = -1
     Unag = -1
+    Iddkmax = Iddkl
     for ii in range(0, len(V_list)):
         Z_4 = np.array([[1, 1, -1], [Zcl, -(Zohl + Ztrvdn), 0], [Zcl, 0, Zn_Red_list[i] + Zg]])
         E_4 = np.array([0, -V_list[ii], Ec_Red_list[i]])
@@ -435,7 +438,8 @@ for i in range(0, len(Ec_Red_list)):
             Zn = Zn_RV_list[t + ii]
             Ec = Ec_RV_list[t + ii]
         elif abs(I_RV_list[t + ii][0]) <= 0.9 * Iddkl and abs(
-                I_RV_list[t + ii][1]) <= 0.9 * Iddvl and KPD > KPDopt and Un * 0.9 <= Unag <= Un * 1.1:
+                I_RV_list[t + ii][1]) <= 0.9 * Iddvl and abs(I_RV_list[t + ii][0]) < Iddkmax and Un * 0.9 <= Unag <= Un * 1.1:
+            Iddkmax = abs(I_RV_list[t + ii][0])
             KPDopt = KPD
             Vopt = V_list[ii]
             I1 = I_RV_list[t + ii][0]
@@ -444,7 +448,8 @@ for i in range(0, len(Ec_Red_list)):
             Zn = Zn_RV_list[t + ii]
             Ec = Ec_RV_list[t + ii]
         elif abs(I_RV_list[t + ii][0]) <= 0.95 * Iddkl and abs(
-                I_RV_list[t + ii][1]) <= 0.95 * Iddvl and KPD > KPDopt:
+                I_RV_list[t + ii][1]) <= 0.95 * Iddvl and KPD > KPDopt and abs(I_RV_list[t + ii][0]) < Iddkmax:
+            Iddkmax = abs(I_RV_list[t + ii][0])
             KPDopt = KPD
             Vopt = V_list[ii]
             I1 = I_RV_list[t + ii][0]
