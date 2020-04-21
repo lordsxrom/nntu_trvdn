@@ -240,11 +240,11 @@ V_list_result = []
 Vprod = []
 Vpop = []
 
-for i in range(0, 1000, 10):
+for i in range(-100, 1000, 10):
     V = i * Unom_trvdn / 10000
     Vprod.append(V)
 
-for i in range(0, 855, 10):
+for i in range(-100, 855, 10):
     V = i * Unom_trvdn / 10000
     Vpop.append(V)
 
@@ -293,8 +293,8 @@ for i in range(0, len(Ec_Green_list)):
             I_GV_list[t + ii][1]) * abs(I_GV_list[t + ii][1]) * Zohl.real + abs(I_GV_list[t + ii][0]) * abs(
             I_GV_list[t + ii][0]) * Zcl.real)
         Unag = abs((I_GV_list[t + ii][2]) * (Zn_GV_list[i]))
-        if abs(I_GV_list[t + ii][0]) <= 0.95 * Iddkl and abs(
-                I_GV_list[t + ii][1]) <= 0.95 * Iddvl and KPD > KPDopt:
+        if abs(I_GV_list[t + ii][0]) <= 0.8 * Iddkl and abs(
+                I_GV_list[t + ii][1]) <= 0.8 * Iddvl and KPD > KPDopt:
             KPDopt = KPD
             Vopt = V_list[ii]
             I1 = I_GV_list[t + ii][0]
@@ -364,16 +364,6 @@ for i in range(0, len(Ec_Yellow_list)):
             I3 = I_YV_list[t + ii][2]
             Zn = Zn_YV_list[t + ii]
             Ec = Ec_YV_list[t + ii]
-        elif abs(I_YV_list[t + ii][0]) <= Iddkl and abs(
-                I_YV_list[t + ii][1]) <= Iddvl and abs(I_YV_list[t + ii][0]) < Iddkmax:
-            KPDopt = KPD
-            Iddkmax = abs(I_YV_list[t + ii][0])
-            Vopt = V_list[ii]
-            I1 = I_YV_list[t + ii][0]
-            I2 = I_YV_list[t + ii][1]
-            I3 = I_YV_list[t + ii][2]
-            Zn = Zn_YV_list[t + ii]
-            Ec = Ec_YV_list[t + ii]
     Zn_YDS.extend([Zn])
     Ec_YDS.extend([Ec])
     I1_YV_list.extend([I1])
@@ -427,9 +417,11 @@ for i in range(0, len(Ec_Red_list)):
                 abs(I_RV_list[t + ii][2]) * abs(I_RV_list[t + ii][2]) * (Zn_RV_list[i].real + Zg.real) + abs(
             I_RV_list[t + ii][1]) * abs(I_RV_list[t + ii][1]) * Zohl.real + abs(I_RV_list[t + ii][0]) * abs(
             I_RV_list[t + ii][0]) * Zcl.real)
+        I1kl = abs(I_RV_list[t + ii][0])
+        I2vl = abs(I_RV_list[t + ii][1])
         Unag = abs((I_RV_list[t + ii][2]) * (Zn_RV_list[i]))
-        if abs(I_RV_list[t + ii][0]) <= 0.95 * Iddkl and abs(
-                I_RV_list[t + ii][1]) <= 0.95 * Iddvl and KPD > KPDopt:
+        if I1kl <= 0.95 * Iddkl and I2vl <= 0.95 * Iddvl and KPD > KPDopt and I1kl < Iddkmax:
+            Iddkmax = I1kl
             KPDopt = KPD
             Vopt = V_list[ii]
             I1 = I_RV_list[t + ii][0]
@@ -437,16 +429,15 @@ for i in range(0, len(Ec_Red_list)):
             I3 = I_RV_list[t + ii][2]
             Zn = Zn_RV_list[t + ii]
             Ec = Ec_RV_list[t + ii]
-        elif abs(I_RV_list[t + ii][0]) <= Iddkl and abs(
-                I_RV_list[t + ii][1]) <= Iddvl and abs(I_RV_list[t + ii][0]) < Iddkmax:
-            Iddkmax = abs(I_RV_list[t + ii][0])
+        elif I1kl <= 1 * Iddkl and I2vl <= 1 * Iddvl and KPD > KPDopt and I1kl < Iddkmax:
+            Iddkmax = I1kl
             KPDopt = KPD
             Vopt = V_list[ii]
             I1 = I_RV_list[t + ii][0]
             I2 = I_RV_list[t + ii][1]
             I3 = I_RV_list[t + ii][2]
             Zn = Zn_RV_list[t + ii]
-            Ec = Ec_RV_list[t + ii]
+            Ec = Ec_RV_list[t + ii]           
     Zn_RDS.extend([Zn])
     Ec_RDS.extend([Ec])
     I1_RV_list.extend([I1])
