@@ -18,7 +18,7 @@ Iddkl = 285
 Iddvl = 450
 
 Un = 6000 / math.sqrt(3)
-Unom_trvdn = 6300
+Unom_trvdn = 6300 / math.sqrt(3)
 
 # Сопротивление нагрузки
 Z_list = []
@@ -240,11 +240,11 @@ V_list_result = []
 Vprod = []
 Vpop = []
 
-for i in range(-100, 1000, 10):
+for i in range(0, 1000, 10):
     V = i * Unom_trvdn / 10000
     Vprod.append(V)
 
-for i in range(-100, 855, 10):
+for i in range(0, 855, 10):
     V = i * Unom_trvdn / 10000
     Vpop.append(V)
 
@@ -417,11 +417,9 @@ for i in range(0, len(Ec_Red_list)):
                 abs(I_RV_list[t + ii][2]) * abs(I_RV_list[t + ii][2]) * (Zn_RV_list[i].real + Zg.real) + abs(
             I_RV_list[t + ii][1]) * abs(I_RV_list[t + ii][1]) * Zohl.real + abs(I_RV_list[t + ii][0]) * abs(
             I_RV_list[t + ii][0]) * Zcl.real)
-        I1kl = abs(I_RV_list[t + ii][0])
-        I2vl = abs(I_RV_list[t + ii][1])
         Unag = abs((I_RV_list[t + ii][2]) * (Zn_RV_list[i]))
-        if I1kl <= 0.95 * Iddkl and I2vl <= 0.95 * Iddvl and KPD > KPDopt and I1kl < Iddkmax:
-            Iddkmax = I1kl
+        if abs(I_RV_list[t + ii][0]) <= 0.95 * Iddkl and abs(
+                I_RV_list[t + ii][1]) <= 0.95 * Iddvl and KPD > KPDopt:
             KPDopt = KPD
             Vopt = V_list[ii]
             I1 = I_RV_list[t + ii][0]
@@ -429,15 +427,6 @@ for i in range(0, len(Ec_Red_list)):
             I3 = I_RV_list[t + ii][2]
             Zn = Zn_RV_list[t + ii]
             Ec = Ec_RV_list[t + ii]
-        elif I1kl <= 1 * Iddkl and I2vl <= 1 * Iddvl and KPD > KPDopt and I1kl < Iddkmax:
-            Iddkmax = I1kl
-            KPDopt = KPD
-            Vopt = V_list[ii]
-            I1 = I_RV_list[t + ii][0]
-            I2 = I_RV_list[t + ii][1]
-            I3 = I_RV_list[t + ii][2]
-            Zn = Zn_RV_list[t + ii]
-            Ec = Ec_RV_list[t + ii]           
     Zn_RDS.extend([Zn])
     Ec_RDS.extend([Ec])
     I1_RV_list.extend([I1])
