@@ -44,16 +44,43 @@ I2_list = []
 I3_list = []
 Un_list = []
 
+V_list = []
+V_list_result = []
+V_add_result = []
+
+Vprod = []
+Vpop = []
+
+#Сделать шаг 10 потом
+
+for i in range(-1000, 1000, 100):
+    V = i * Unom_trvdn / 10000
+    Vprod.append(V)
+
+for i in range(-855, 855, 100):
+    V = i * Unom_trvdn / 10000
+    Vpop.append(V)
+
+for i in range(0, len(Vpop)):
+    for ii in range(0, len(Vprod)):
+        V = complex(Vprod[ii], Vpop[i])
+        V_list.extend([V])
+
+
+V_add = V_list
 # Решение СЛАУ
 
-for i in range(0, len(Z_list)):
-    for ii in range(0, len(Ec_list)):
-        Z_1 = np.array([[1, 1, -1], [Zcl, -(Zohl + Ztrvdn), 0], [Zcl, 0, Z_list[i] + Zg]])
-        E_1 = np.array([0, 0, Ec_list[ii]])
-        result = np.linalg.solve(Z_1, E_1)
-        Ec_result_list.extend([Ec_list[ii]])
-        Zn_result_list.extend([Z_list[i]])
-        I_result_list.extend([result.tolist()])
+for j in range(0, len(V_add)):
+    for i in range(0, len(Z_list)):
+        for ii in range(0, len(Ec_list)):
+            Z_1 = np.array([[1, 1, -1], [Zcl, -(Zohl + Ztrvdn), 0], [Zcl, 0, Z_list[i] + Zg]])
+            E_1 = np.array([0, -V_add[j], Ec_list[ii]])
+            result = np.linalg.solve(Z_1, E_1)
+            Ec_result_list.extend([Ec_list[ii]])
+            Zn_result_list.extend([Z_list[i]])
+            I_result_list.extend([result.tolist()])
+            V_add_result.extend([V_add[j]])
+            
 
 # Разбиение на показательную форму токов (1 - КЛ, 2 - ВЛ, 3 - нагрузка)
 for i in range(0, len(I_result_list)):
@@ -86,6 +113,13 @@ for i in range(0, len(Zn_result_list)):
     Zn_list_real.append(Zn_result_list[i].real)
     Zn_list_imag.append(Zn_result_list[i].imag)
 
+V_add_result_real = []
+V_add_result_imag = []
+    
+for i in range(0, len(Zn_result_list)):
+    V_add_result_real.append(V_add_result[i].real)
+    V_add_result_imag.append(V_add_result[i].imag)    
+
 KPD_list = []
 
 for i in range(0, len(Zn_result_list)):
@@ -111,7 +145,7 @@ print("Number of generated results", number)
 
 # Создание файла Excel
 index = list(range(0, number))
-cols = ['I1', 'I2', 'I3', 'Un_mod', 'Ec_result', 'Zn_result', 'KPD']
+cols = ['I1', 'I2', 'I3', 'Un_mod', 'Ec_result', 'Zn_result', 'KPD', 'V_add_real', 'V_add_imag']
 
 df1 = pd.DataFrame(columns=cols, index=index)
 df1['I1'] = I1_list
@@ -121,6 +155,8 @@ df1['Un_list'] = Un_list
 df1['Ec_result'] = Ec_result_list
 df1['Zn_result'] = Zn_result_list
 df1['KPD'] = KPD_list
+df1['V_add_real'] = V_add_result_real
+df1['V_add_imag'] = V_add_result_imag
 
 df1.to_excel('generating_step.xls', sheet_name='my_sheet')
 
@@ -155,6 +191,13 @@ I3_Green_list = []
 Un_Green_list = []
 KPD_Green_list = []
 
+V_Green_add_real = []
+V_Green_add_imag = []
+V_Red_add_real = []
+V_Red_add_imag = []
+V_Yellow_add_real = []
+V_Yellow_add_imag = []
+
 # Сравнение по току 1 - КЛ, 2 - ВЛ (ввести коэфециенты для напряжения - минимальный и максимальный)
 
 
@@ -168,6 +211,8 @@ for i in range(0, len(Un_list)):
         I3_Green_list.append(I3_list[i])
         Un_Green_list.append(Un_list[i])
         KPD_Green_list.append(KPD_list[i])
+        V_Green_add_real.append(V_add_result_real[i])
+        V_Green_add_imag.append(V_add_result_imag[i])
     # Фильтрация красной зоны
     elif Un * 1.1 < Un_mod[i] or Un_mod[i] < Un * 0.9 or I1_list_mod[i] > 0.9 * Iddkl or I2_list_mod[i] > 0.9 * Iddvl:
         Ec_Red_list.append(Ec_result_list[i])
@@ -177,9 +222,10 @@ for i in range(0, len(Un_list)):
         I3_Red_list.append(I3_list[i])
         Un_Red_list.append(Un_list[i])
         KPD_Red_list.append(KPD_list[i])
+        V_Red_add_real.append(V_add_result_real[i])
+        V_Red_add_imag.append(V_add_result_imag[i])
     # Фильтрация желтой зоны
-    elif Un * 0.9 <= Un_mod[i] <= Un * 1.1 or I1_list_mod[i] <= 0.9 * Iddkl or I2_list_mod[
-        i] <= 0.9 * Iddvl:
+    elif Un * 0.9 <= Un_mod[i] <= Un * 0.95 and Un * 1.05 <= Un_mod[i] <= Un * 1.1 or I1_list_mod[i] <= 0.9 * Iddkl or I2_list_mod[i] <= 0.9 * Iddvl:
         Ec_Yellow_list.append(Ec_result_list[i])
         Zn_Yellow_list.append(Zn_result_list[i])
         I1_Yellow_list.append(I1_list[i])
@@ -187,6 +233,8 @@ for i in range(0, len(Un_list)):
         I3_Yellow_list.append(I3_list[i])
         Un_Yellow_list.append(Un_list[i])
         KPD_Yellow_list.append(KPD_list[i])
+        V_Yellow_add_real.append(V_add_result_real[i])
+        V_Yellow_add_imag.append(V_add_result_imag[i])
 
 # Проверка колличества позиций в красном и зеленом списке
 nuber_red = len(I1_Red_list)
@@ -204,6 +252,8 @@ I2_DOTRVDN_list = []
 I3_DOTRVDN_list = []
 Un_DOTRVDN_list = []
 KPD_DOTRVDN_list = []
+V_DOTRVDN_real = []
+V_DOTRVDN_imag = []
 
 # Создание списка режимов расспределенных по зеленой, желтой и красной зоны
 
@@ -215,6 +265,8 @@ for i in range(0, nuber_green):
     I3_DOTRVDN_list.append(I3_Green_list[i])
     Un_DOTRVDN_list.append(Un_Green_list[i])
     KPD_DOTRVDN_list.append(KPD_Green_list[i])
+    V_DOTRVDN_real.append(V_Green_add_real[i])
+    V_DOTRVDN_imag.append(V_Green_add_imag[i])
 
 for i in range(0, nuber_yellow):
     Ec_DOTRVDN_list.append(Ec_Yellow_list[i])
@@ -224,6 +276,8 @@ for i in range(0, nuber_yellow):
     I3_DOTRVDN_list.append(I3_Yellow_list[i])
     Un_DOTRVDN_list.append(Un_Yellow_list[i])
     KPD_DOTRVDN_list.append(KPD_Yellow_list[i])
+    V_DOTRVDN_real.append(V_Yellow_add_real[i])
+    V_DOTRVDN_imag.append(V_Yellow_add_imag[i])
 
 for i in range(0, nuber_red):
     Ec_DOTRVDN_list.append(Ec_Red_list[i])
@@ -233,25 +287,9 @@ for i in range(0, nuber_red):
     I3_DOTRVDN_list.append(I3_Red_list[i])
     Un_DOTRVDN_list.append(Un_Red_list[i])
     KPD_DOTRVDN_list.append(KPD_Red_list[i])
+    V_DOTRVDN_real.append(V_Red_add_real[i])
+    V_DOTRVDN_imag.append(V_Red_add_imag[i])
 
-V_list = []
-V_list_result = []
-
-Vprod = []
-Vpop = []
-
-for i in range(0, 1000, 10):
-    V = i * Unom_trvdn / 10000
-    Vprod.append(V)
-
-for i in range(0, 855, 10):
-    V = i * Unom_trvdn / 10000
-    Vpop.append(V)
-
-for i in range(0, len(Vpop)):
-    for ii in range(0, len(Vprod)):
-        V = complex(Vprod[ii], Vpop[i])
-        V_list.extend([V])
 
 # ТРВДН разбить на 2 части Добавить напряжение
 t = 0
@@ -294,7 +332,7 @@ for i in range(0, len(Ec_Green_list)):
             I_GV_list[t + ii][0]) * Zcl.real)
         Unag = abs((I_GV_list[t + ii][2]) * (Zn_GV_list[i]))
         if abs(I_GV_list[t + ii][0]) <= 0.8 * Iddkl and abs(
-                I_GV_list[t + ii][1]) <= 0.8 * Iddvl and KPD > KPDopt:
+                I_GV_list[t + ii][1]) <= 0.8 * Iddvl and 0.95*Un < Unag < 1.05*Un and KPD > KPDopt:
             KPDopt = KPD
             Vopt = V_list[ii]
             I1 = I_GV_list[t + ii][0]
@@ -355,8 +393,8 @@ for i in range(0, len(Ec_Yellow_list)):
             I_YV_list[t + ii][1]) * abs(I_YV_list[t + ii][1]) * Zohl.real + abs(I_YV_list[t + ii][0]) * abs(
             I_YV_list[t + ii][0]) * Zcl.real)
         Unag = abs((I_YV_list[t + ii][2]) * (Zn_YV_list[i]))
-        if abs(I_YV_list[t + ii][0]) <= 0.95 * Iddkl and abs(
-                I_YV_list[t + ii][1]) <= 0.95 * Iddvl and KPD > KPDopt:
+        if abs(I_YV_list[t + ii][0]) <= 0.85 * Iddkl and abs(
+                I_YV_list[t + ii][1]) <= 0.85 * Iddvl and 0.95*Un < Unag < 1.05*Un:
             KPDopt = KPD
             Vopt = V_list[ii]
             I1 = I_YV_list[t + ii][0]
@@ -418,8 +456,8 @@ for i in range(0, len(Ec_Red_list)):
             I_RV_list[t + ii][1]) * abs(I_RV_list[t + ii][1]) * Zohl.real + abs(I_RV_list[t + ii][0]) * abs(
             I_RV_list[t + ii][0]) * Zcl.real)
         Unag = abs((I_RV_list[t + ii][2]) * (Zn_RV_list[i]))
-        if abs(I_RV_list[t + ii][0]) <= 0.95 * Iddkl and abs(
-                I_RV_list[t + ii][1]) <= 0.95 * Iddvl and KPD > KPDopt:
+        if abs(I_RV_list[t + ii][0]) <= 0.85 * Iddkl and abs(
+                I_RV_list[t + ii][1]) <= 0.85 * Iddvl:
             KPDopt = KPD
             Vopt = V_list[ii]
             I1 = I_RV_list[t + ii][0]
@@ -427,6 +465,15 @@ for i in range(0, len(Ec_Red_list)):
             I3 = I_RV_list[t + ii][2]
             Zn = Zn_RV_list[t + ii]
             Ec = Ec_RV_list[t + ii]
+        elif abs(I_RV_list[t + ii][0]) <= Iddkmax:
+            Iddkmax = abs(I_RV_list[t + ii][0])
+            KPDopt = KPD
+            Vopt = V_list[ii]
+            I1 = I_RV_list[t + ii][0]
+            I2 = I_RV_list[t + ii][1]
+            I3 = I_RV_list[t + ii][2]
+            Zn = Zn_RV_list[t + ii]
+            Ec = Ec_RV_list[t + ii]    
     Zn_RDS.extend([Zn])
     Ec_RDS.extend([Ec])
     I1_RV_list.extend([I1])
@@ -562,17 +609,18 @@ print(Sn__doTRVDN)
 
 number_TRVDN = len(I1_act_TRVDN)
 index = list(range(0, number_TRVDN))
-cols = ['Zn_act', 'Zn_react', 'Ec_act', 'Ec_react', 'Ec_mod', 'Ec_yg', 'I1_act', 'I1_react', 'I2_act', 'I2_react', 'Pn',
-        'Qn',
-        'Un_act_TRVDN', 'Un_react_TRVDN', 'V_act', 'V_react', 'KPD']
+cols = ['Zn_act', 'Zn_react', 'Ec_mod', 'Ec_yg', 'V_add_real', 'V_add_imag', 'Ec_act', 'Ec_react', 'I1_act', 'I1_react', 'I2_act', 'I2_react', 'Pn',
+        'Qn', 'Un_act_TRVDN', 'Un_react_TRVDN', 'V_act', 'V_react', 'KPD']
 
 df2 = pd.DataFrame(columns=cols, index=index)
 df2['Zn_act'] = Zn_act_TRVDN
 df2['Zn_react'] = Zn_react_TRVDN
-df2['Ec_act'] = Ec_act_TRVDN
-df2['Ec_react'] = Ec_react_TRVDN
 df2['Ec_mod'] = Ec_mod_TRVDN
 df2['Ec_yg'] = Ec_yg_TRVDN
+df2['V_add_real'] = V_DOTRVDN_real
+df2['V_add_imag'] = V_DOTRVDN_imag
+df2['Ec_act'] = Ec_act_TRVDN
+df2['Ec_react'] = Ec_react_TRVDN
 df2['I1_act'] = I1_act_TRVDN
 df2['I1_react'] = I1_react_TRVDN
 df2['I2_act'] = I2_act_TRVDN
@@ -585,11 +633,13 @@ df2['V_act'] = V_act_TRVDN
 df2['V_react'] = V_react_TRVDN
 df2['KPD'] = KPD_TRVDN
 
+
+
 df2.to_excel('optimisation_step.xls', sheet_name='sheet_TRVDN')
 
 number_TRVDN = len(I1_act_doTRVDN)
 index = list(range(0, number_TRVDN))
-cols = ['Zn_act', 'Zn_react', 'Ec_mod', 'Ec_yg',
+cols = ['Zn_act', 'Zn_react', 'Ec_mod', 'Ec_yg', 'V_add_real', 'V_add_imag',
         'Ec_act', 'Ec_react', 'I1_act', 'I1_react', 'I2_act', 'I2_react',
         'Pn', 'Qn', 'Un_act_TRVDN', 'Un_react_TRVDN', 'V_act', 'V_react', 'KPD']
 
@@ -598,6 +648,8 @@ df3['Zn_act'] = Zn_act_doTRVDN
 df3['Zn_react'] = Zn_react_doTRVDN
 df3['Ec_mod'] = Ec_mod_doTRVDN
 df3['Ec_yg'] = Ec_yg_doTRVDN
+df3['V_add_real'] = V_DOTRVDN_real
+df3['V_add_imag'] = V_DOTRVDN_imag
 df3['Ec_act'] = Ec_act_doTRVDN
 df3['Ec_react'] = Ec_react_doTRVDN
 df3['I1_act'] = I1_act_doTRVDN
@@ -611,5 +663,6 @@ df3['Un_react_TRVDN'] = Un_react_doTRVDN
 df3['V_act'] = V_act_doTRVDN
 df3['V_react'] = V_react_doTRVDN
 df3['KPD'] = KPD_doTRVDN
+
 
 df3.to_excel('data_for_learnig.xls', sheet_name='sheet_NN')
