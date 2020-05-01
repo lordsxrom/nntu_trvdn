@@ -5,9 +5,13 @@ import math
 import numpy as np
 import pandas as pd
 
-# Линейное напряжение, В
+# Номинальное фазное напряжение сети, В
+Un = 6000 / math.sqrt(3)
 
+# Номинальное фазное напряжение ТРВДН, В
+Unom_trvdn = 6300 / math.sqrt(3)
 
+# Параметры схемы замещения, В
 Zcl = 1.29 + 0.405j
 Zohl = 0.792 + 1.452j
 Ztrvdn = 0.01 + 0.05j
@@ -17,12 +21,8 @@ Zg = 0.00001 + 0.00001j
 Iddkl = 285
 Iddvl = 450
 
-Un = 6000 / math.sqrt(3)
-Unom_trvdn = 6300 / math.sqrt(3)
-
 # Сопротивление нагрузки
 Z_list = []
-
 for Zn in range(5, 9):
     for Znj in range(2, 5):
         Z1 = complex(Zn, Znj)
@@ -30,47 +30,42 @@ for Zn in range(5, 9):
 
 # Напряжение на источнике
 Ec_list = []
-
 for Ecmod in range(5040, 7561, 100):
     for Ecyg in range(-4, 5):
         Ec = (Ecmod / math.sqrt(3)) * cmath.exp((cmath.pi / 180) * Ecyg * cmath.sqrt(-1))
         Ec_list.extend([Ec])
 
-Ec_result_list = []
-Zn_result_list = []
-I_result_list = []
-I1_list = []
-I2_list = []
-I3_list = []
-Un_list = []
-
-V_list = []
-V_list_result = []
-V_add_result = []
-
+# Задача продольной волтодобавки, шаг 100 В
 Vprod = []
-Vpop = []
-
-#Сделать шаг 10 потом
-
 for i in range(-1000, 1000, 100):
     V = i * Unom_trvdn / 10000
     Vprod.append(V)
 
+# Задача поперечной волтодобавки, шаг 100 В
+Vpop = []
 for i in range(-855, 855, 100):
     V = i * Unom_trvdn / 10000
     Vpop.append(V)
 
+# Комплекс вольтодобавки
+V_list = []
 for i in range(0, len(Vpop)):
     for ii in range(0, len(Vprod)):
         V = complex(Vprod[ii], Vpop[i])
         V_list.extend([V])
 
-
+# FIXME
 V_add = V_list
+
 # Решение СЛАУ
+Ec_result_list = []
+Zn_result_list = []
+I_result_list = []
+Un_list = []
+V_add_result = []
 
 for j in range(0, len(V_add)):
+    print("Generating progress", j / len(V_add) * 100)
     for i in range(0, len(Z_list)):
         for ii in range(0, len(Ec_list)):
             Z_1 = np.array([[1, 1, -1], [Zcl, -(Zohl + Ztrvdn), 0], [Zcl, 0, Z_list[i] + Zg]])
@@ -80,22 +75,23 @@ for j in range(0, len(V_add)):
             Zn_result_list.extend([Z_list[i]])
             I_result_list.extend([result.tolist()])
             V_add_result.extend([V_add[j]])
-            
 
-# Разбиение на показательную форму токов (1 - КЛ, 2 - ВЛ, 3 - нагрузка)
+# Разделение массива токов на три тока (1 - КЛ, 2 - ВЛ, 3 - нагрузка)
+I1_list = []
+I2_list = []
+I3_list = []
 for i in range(0, len(I_result_list)):
     I1_list.append(I_result_list[i][0])
     I2_list.append(I_result_list[i][1])
     I3_list.append(I_result_list[i][2])
 
+# Разделение токов на активную и реактивную составляющую
 I1_list_real = []
 I1_list_imag = []
 I2_list_real = []
 I2_list_imag = []
 I1_list_mod = []
 I2_list_mod = []
-
-# Длинна вектора тока
 for i in range(0, len(I_result_list)):
     I1_list_real.append(I1_list[i].real)
     I1_list_imag.append(I1_list[i].imag)
@@ -104,34 +100,32 @@ for i in range(0, len(I_result_list)):
     I1_list_mod.append(abs(I1_list[i]))
     I2_list_mod.append(abs(I2_list[i]))
 
-# Модуль нагрузки не используется
-
+# Сопротивление нагрузки после решения СЛАУ
 Zn_list_real = []
 Zn_list_imag = []
-
 for i in range(0, len(Zn_result_list)):
     Zn_list_real.append(Zn_result_list[i].real)
     Zn_list_imag.append(Zn_result_list[i].imag)
 
+# Вольтодобавка после решения СЛАУ
 V_add_result_real = []
 V_add_result_imag = []
-    
 for i in range(0, len(Zn_result_list)):
     V_add_result_real.append(V_add_result[i].real)
-    V_add_result_imag.append(V_add_result[i].imag)    
+    V_add_result_imag.append(V_add_result[i].imag)
 
+# КПД после решения СЛАУ
 KPD_list = []
-
 for i in range(0, len(Zn_result_list)):
     KPD = (abs(I3_list[i]) * abs(I3_list[i]) * Zn_result_list[i].real) / ((
             abs(I3_list[i]) * abs(I3_list[i]) * (Zn_result_list[i].real + Zg.real) + abs(I2_list[i]) * abs(
         I2_list[i]) * Zohl.real + abs(I1_list[i]) * abs(I1_list[i]) * Zcl.real))
     KPD_list.append(KPD)
 
+# Напряжения на нагрузке после решения СЛАУ
 Un_real = []
 Un_imag = []
 Un_mod = []
-
 for i in range(0, len(Zn_result_list)):
     U_n = Zn_result_list[i] * I3_list[i]
     Un_list.append(U_n)
@@ -225,7 +219,8 @@ for i in range(0, len(Un_list)):
         V_Red_add_real.append(V_add_result_real[i])
         V_Red_add_imag.append(V_add_result_imag[i])
     # Фильтрация желтой зоны
-    elif Un * 0.9 <= Un_mod[i] <= Un * 0.95 and Un * 1.05 <= Un_mod[i] <= Un * 1.1 or I1_list_mod[i] <= 0.9 * Iddkl or I2_list_mod[i] <= 0.9 * Iddvl:
+    elif Un * 0.9 <= Un_mod[i] <= Un * 0.95 and Un * 1.05 <= Un_mod[i] <= Un * 1.1 or I1_list_mod[i] <= 0.9 * Iddkl or \
+            I2_list_mod[i] <= 0.9 * Iddvl:
         Ec_Yellow_list.append(Ec_result_list[i])
         Zn_Yellow_list.append(Zn_result_list[i])
         I1_Yellow_list.append(I1_list[i])
@@ -290,7 +285,6 @@ for i in range(0, nuber_red):
     V_DOTRVDN_real.append(V_Red_add_real[i])
     V_DOTRVDN_imag.append(V_Red_add_imag[i])
 
-
 # ТРВДН разбить на 2 части Добавить напряжение
 t = 0
 percent = 0
@@ -331,8 +325,7 @@ for i in range(0, len(Ec_Green_list)):
             I_GV_list[t + ii][1]) * abs(I_GV_list[t + ii][1]) * Zohl.real + abs(I_GV_list[t + ii][0]) * abs(
             I_GV_list[t + ii][0]) * Zcl.real)
         Unag = abs((I_GV_list[t + ii][2]) * (Zn_GV_list[i]))
-        if abs(I_GV_list[t + ii][0]) <= 0.8 * Iddkl and abs(
-                I_GV_list[t + ii][1]) <= 0.8 * Iddvl and 0.95*Un < Unag < 1.05*Un and KPD > KPDopt:
+        if abs(I_GV_list[t + ii][0]) <= 0.8 * Iddkl and abs(I_GV_list[t + ii][1]) <= 0.8 * Iddvl and 0.95 * Un < Unag < 1.05 * Un and KPD > KPDopt:
             KPDopt = KPD
             Vopt = V_list[ii]
             I1 = I_GV_list[t + ii][0]
@@ -393,8 +386,7 @@ for i in range(0, len(Ec_Yellow_list)):
             I_YV_list[t + ii][1]) * abs(I_YV_list[t + ii][1]) * Zohl.real + abs(I_YV_list[t + ii][0]) * abs(
             I_YV_list[t + ii][0]) * Zcl.real)
         Unag = abs((I_YV_list[t + ii][2]) * (Zn_YV_list[i]))
-        if abs(I_YV_list[t + ii][0]) <= 0.85 * Iddkl and abs(
-                I_YV_list[t + ii][1]) <= 0.85 * Iddvl and 0.95*Un < Unag < 1.05*Un:
+        if abs(I_YV_list[t + ii][0]) <= 0.85 * Iddkl and abs(I_YV_list[t + ii][1]) <= 0.85 * Iddvl and 0.95 * Un < Unag < 1.05 * Un:
             KPDopt = KPD
             Vopt = V_list[ii]
             I1 = I_YV_list[t + ii][0]
@@ -456,8 +448,7 @@ for i in range(0, len(Ec_Red_list)):
             I_RV_list[t + ii][1]) * abs(I_RV_list[t + ii][1]) * Zohl.real + abs(I_RV_list[t + ii][0]) * abs(
             I_RV_list[t + ii][0]) * Zcl.real)
         Unag = abs((I_RV_list[t + ii][2]) * (Zn_RV_list[i]))
-        if abs(I_RV_list[t + ii][0]) <= 0.85 * Iddkl and abs(
-                I_RV_list[t + ii][1]) <= 0.85 * Iddvl:
+        if abs(I_RV_list[t + ii][0]) <= 0.85 * Iddkl and abs(I_RV_list[t + ii][1]) <= 0.85 * Iddvl:
             KPDopt = KPD
             Vopt = V_list[ii]
             I1 = I_RV_list[t + ii][0]
@@ -473,7 +464,7 @@ for i in range(0, len(Ec_Red_list)):
             I2 = I_RV_list[t + ii][1]
             I3 = I_RV_list[t + ii][2]
             Zn = Zn_RV_list[t + ii]
-            Ec = Ec_RV_list[t + ii]    
+            Ec = Ec_RV_list[t + ii]
     Zn_RDS.extend([Zn])
     Ec_RDS.extend([Ec])
     I1_RV_list.extend([I1])
@@ -609,7 +600,8 @@ print(Sn__doTRVDN)
 
 number_TRVDN = len(I1_act_TRVDN)
 index = list(range(0, number_TRVDN))
-cols = ['Zn_act', 'Zn_react', 'Ec_mod', 'Ec_yg', 'V_add_real', 'V_add_imag', 'Ec_act', 'Ec_react', 'I1_act', 'I1_react', 'I2_act', 'I2_react', 'Pn',
+cols = ['Zn_act', 'Zn_react', 'Ec_mod', 'Ec_yg', 'V_add_real', 'V_add_imag', 'Ec_act', 'Ec_react', 'I1_act', 'I1_react',
+        'I2_act', 'I2_react', 'Pn',
         'Qn', 'Un_act_TRVDN', 'Un_react_TRVDN', 'V_act', 'V_react', 'KPD']
 
 df2 = pd.DataFrame(columns=cols, index=index)
@@ -632,8 +624,6 @@ df2['Un_react_TRVDN'] = Un_react_TRVDN
 df2['V_act'] = V_act_TRVDN
 df2['V_react'] = V_react_TRVDN
 df2['KPD'] = KPD_TRVDN
-
-
 
 df2.to_excel('optimisation_step.xls', sheet_name='sheet_TRVDN')
 
@@ -663,6 +653,5 @@ df3['Un_react_TRVDN'] = Un_react_doTRVDN
 df3['V_act'] = V_act_doTRVDN
 df3['V_react'] = V_react_doTRVDN
 df3['KPD'] = KPD_doTRVDN
-
 
 df3.to_excel('data_for_learnig.xls', sheet_name='sheet_NN')
